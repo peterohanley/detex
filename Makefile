@@ -20,11 +20,11 @@ CFLAGS = -std=c99 -D_POSIX_C_SOURCE=200809L -Wall -Wno-maybe-uninitialized -pipe
 
 ifeq ($(LIBRARY_CONFIGURATION), SHARED)
 # Shared library.
-LIBRARY_OBJECT = $(LIBRARY_NAME).so.$(VERSION)
+LIBRARY_OBJECT = $(LIBRARY_NAME).dylib.$(VERSION)
 INSTALL_TARGET = install_shared
 LIBRARY_DEPENDENCY =
 TEST_PROGRAM_LFLAGS = -l$(SHORT_LIBRARY_NAME)
-CFLAGS_LIB = $(CFLAGS) -fPIC -fvisibility=hidden -DDST_SHARED -DDST_SHARED_EXPORTS
+CFLAGS_LIB = $(CFLAGS) -fPIC #-fvisibility=hidden -DDST_SHARED -DDST_SHARED_EXPORTS
 CFLAGS_TEST = $(CFLAGS)
 else
 # Static or static debug version.
@@ -45,7 +45,8 @@ LIBRARY_LIBS = -lm
 
 LIBRARY_MODULE_OBJECTS = bptc-tables.o bits.o clamp.o convert.o dds.o decompress-bc.o decompress-bptc.o \
 	decompress-bptc-float.o decompress-etc.o decompress-eac.o decompress-rgtc.o division-tables.o \
-	file-info.o half-float.o hdr.o ktx.o misc.o raw.o texture.o
+	file-info.o half-float.o hdr.o ktx.o misc.o raw.o texture.o \
+  idris-hooks.o
 LIBRARY_HEADER_FILES = detex.h
 TEST_PROGRAMS = detex-validate detex-view detex-convert
 
@@ -55,8 +56,8 @@ library : $(LIBRARY_OBJECT)
 
 programs : $(TEST_PROGRAMS)
 
-$(LIBRARY_NAME).so.$(VERSION) : $(LIBRARY_MODULE_OBJECTS) $(LIBRARY_HEADER_FILES)
-	g++ -shared -Wl,-soname,$(LIBRARY_NAME).so.$(SO_VERSION) -fPIC -o $(LIBRARY_OBJECT) \
+$(LIBRARY_NAME).dylib.$(VERSION) : $(LIBRARY_MODULE_OBJECTS) $(LIBRARY_HEADER_FILES)
+	$(CC) -shared -o $(LIBRARY_OBJECT) \
 $(LIBRARY_MODULE_OBJECTS) $(LIBRARY_LIBS)
 	@echo Run '(sudo) make install to install.'
 
@@ -102,7 +103,7 @@ clean :
 	rm -f detex-view.o
 	rm -f detex-convert.o
 	rm -f png.o
-	rm -f $(LIBRARY_NAME).so.$(VERSION)
+	rm -f $(LIBRARY_NAME).dylib.$(VERSION)
 	rm -f $(LIBRARY_NAME).a
 	rm -f $(LIBRARY_NAME)_dbg.a
 

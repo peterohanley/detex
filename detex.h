@@ -740,6 +740,18 @@ typedef struct {
  * compression format.
  */
 
+DETEX_API
+detexTexture *
+makeDetexETC2(uint8_t *buf, int w, int h);
+
+DETEX_API
+detexTexture *
+makeDetexETC2_RGBA8(uint8_t *buf, int w, int h);
+
+DETEX_API
+void
+freeDetexTexture(detexTexture *dt);
+
 /*
  * General block decompression function. Block is decompressed using the given
  * compressed format, and stored in the given pixel format.
