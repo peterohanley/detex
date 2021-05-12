@@ -1,51 +1,30 @@
-#define DEBUG 0
-#if DEBUG
-#include <stdio.h>
-#endif
 #include "detex.h"
+#include <string.h>
+#include <assert.h>
 
-// FIXME memory leak because these are never freed
 DETEX_API
-detexTexture *
-makeDetexETC2(uint8_t *buf, int w, int h)
+int
+flipVerticalRGBA8(uint8_t *buf, int width, int height)
 {
-  detexTexture *dt = malloc(sizeof(detexTexture));
-  dt->format = DETEX_TEXTURE_FORMAT_ETC2;
-  dt->data = buf;
-  dt->width = w;
-  dt->height = h;
-  dt->width_in_blocks = w/4;
-  dt->height_in_blocks = h/4;
-#if DEBUG
-  printf("%s: buf=%p\n", __FUNCTION__, buf);
-  for (int i = 0; i < 16; i++) {
-    printf("%02x ", buf[i]);
+  if (width <= 0) return -1;
+  if (height <= 0) return -1;
+  uint8_t *buf2 = malloc(sizeof(uint32_t) * width * height);
+  assert(buf2);
+  memcpy(buf2, buf, width*height*4);
+  int stride = width*4;
+  for (int i = 0; i < height; i++) {
+    memcpy(buf+(stride*i), buf2+((height-1)-i)*stride, stride);
   }
-  puts("");
-#endif
-  return dt;
+  free(buf2);
+  return 0;
 }
 
-// FIXME memory leak because these are never freed
-// FIXME merge copied code into a helper function
 DETEX_API
 detexTexture *
-makeDetexETC2_RGBA8(uint8_t *buf, int w, int h)
+makeDetexTexture(uint8_t *buf)
 {
   detexTexture *dt = malloc(sizeof(detexTexture));
-  dt->format = DETEX_TEXTURE_FORMAT_ETC2_EAC;
   dt->data = buf;
-  dt->width = w;
-  dt->height = h;
-  dt->width_in_blocks = w/4;
-  dt->height_in_blocks = h/4;
-#if DEBUG
-  printf("%s: buf=%p\n", __FUNCTION__, buf);
-  for (int i = 0; i < 16; i++) {
-    printf("%02x ", buf[i]);
-  }
-  puts("");
-#endif
   return dt;
 }
 
@@ -54,4 +33,35 @@ void
 freeDetexTexture(detexTexture *dt)
 {
   free(dt);
+}
+
+DETEX_API
+int
+detexFormatRGB8(void)
+{
+  return DETEX_PIXEL_FORMAT_RGB8;
+}
+DETEX_API
+int
+detexFormatRGBA8(void)
+{
+  return DETEX_PIXEL_FORMAT_RGBA8;
+}
+DETEX_API
+int
+detexFormatETC1(void)
+{
+  return DETEX_TEXTURE_FORMAT_ETC1;
+}
+DETEX_API
+int
+detexFormatETC2(void)
+{
+  return DETEX_TEXTURE_FORMAT_ETC2;
+}
+DETEX_API
+int
+detexFormatETC2_EAC(void)
+{
+  return DETEX_TEXTURE_FORMAT_ETC2_EAC;
 }
